@@ -5,8 +5,6 @@ temperature, shows both on an LCD with a smooth pixel-level progress
 bar, and switches a relay-driven water pump on automatically when the
 soil gets too dry.
 
-Originally built in 2022; firmware rebuilt in 2026.
-
 ## What it does
 
 - Reads a soil moisture sensor and converts the raw reading to a
