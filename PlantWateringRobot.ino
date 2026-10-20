@@ -2,8 +2,8 @@
  * Automated Plant Watering Robot — Arduino Uno + LCD Keypad Shield
  * =================================================================
  * Reads soil moisture and air temperature, shows both on the LCD with
- * a simple progress bar, and switches a relay-driven water pump on
- * when the soil is too dry.
+ * a smooth progress bar (LcdBarGraph library), and switches a
+ * relay-driven water pump on when the soil is too dry.
  *
  * Hardware:
  *   - Arduino Uno + LCD Keypad Shield (16x2 LCD + 5 buttons)
@@ -20,6 +20,7 @@
 
 #include <LiquidCrystal.h>
 #include <dht.h>
+#include <LcdBarGraph.h>
 
 // ─── PINS — CHANGE THESE IF YOUR WIRING IS DIFFERENT ──────────────────
 #define SOIL_PIN     A1   // soil moisture sensor, analog input
@@ -28,6 +29,12 @@
 
 // Standard LCD Keypad Shield wiring (usually does not need changing):
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+// Smooth bar graph (uses custom characters for sub-character resolution,
+// instead of plain "#"/"-" text) — 6 columns wide, on row 2 starting at
+// column 0.
+#define BAR_WIDTH 6
+LcdBarGraph moistureBar(&lcd, BAR_WIDTH, 0, 1);
 
 // ─── CALIBRATION ───────────────────────────────────────────────────────
 // Raw analogRead() values for your sensor in air (dry) and in water (wet).
@@ -105,11 +112,9 @@ void showOnLcd(int moisturePct, float tempC) {
     lcd.print("UMIDITATE BUNA  ");
   }
 
-  lcd.setCursor(0, 1);
-  lcd.print("(");
-  printBar(moisturePct);
-  lcd.print(")");
+  moistureBar.drawValue(moisturePct, 100);  // smooth bar, row 2, cols 0-5
 
+  lcd.setCursor(BAR_WIDTH, 1);
   char line2[6];
   snprintf(line2, sizeof(line2), "%3d%%", moisturePct);
   lcd.print(line2);
@@ -121,15 +126,6 @@ void showOnLcd(int moisturePct, float tempC) {
     lcd.print(tbuf);
   } else {
     lcd.print("--C");
-  }
-}
-
-// Draws a 4-character bar, e.g. "##--" for 50%
-void printBar(int pct) {
-  const int barWidth = 4;
-  int filled = map(pct, 0, 100, 0, barWidth);
-  for (int i = 0; i < barWidth; i++) {
-    lcd.print(i < filled ? '#' : '-');
   }
 }
 
